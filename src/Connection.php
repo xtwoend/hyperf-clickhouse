@@ -2,9 +2,11 @@
 
 namespace Xtwoend\HyperfClickhouse;
 
-use ClickHouseDB\Client;
+use Tinderbox\Clickhouse\Client;
+use Tinderbox\Clickhouse\Server;
 use Psr\Container\ContainerInterface;
 use Hyperf\Contract\ConnectionInterface;
+use Tinderbox\Clickhouse\ServerProvider;
 use Xtwoend\HyperfClickhouse\Pool\DbPool;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\DbConnection\Traits\DbConnection;
@@ -124,24 +126,15 @@ class Connection extends BaseConnection implements ConnectionInterface, DbConnec
      */
     public function makeConnection($config)
     {
-        $this->client = new Client($config);
-        $this->client->database($config['database']);
-        $this->client->setTimeout($config['timeout_query']); 
-        $this->client->setConnectTimeOut($config['timeout_connect']);
-        $this->client->ping(true);
-     
-        if ($configSettings =& $config['settings']) {
-            $settings = $this->client->settings();
-            foreach ($configSettings as $sName => $sValue) {
-                $settings->set($sName, $sValue);
-            }
-        }
+        $server = new Server(
+            $config['host'],
+            $config['port'], 
+            $config['database'], 
+            $config['username'],
+            $config['password']);
 
-        if ($retries = (int)($config['retries'] ?? null)) {
-            $curler = new CurlerRollingWithRetries();
-            $curler->setRetries($retries);
-            $this->client->transport()->setDirtyCurler($curler);
-        }
+        $serverProvider = (new ServerProvider())->addServer($server);
+        $this->client = new Client($serverProvider);
 
         return $this->client;
     }

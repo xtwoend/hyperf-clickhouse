@@ -6,37 +6,25 @@ namespace Xtwoend\HyperfClickhouse;
 
 use ClickHouseDB\Client;
 use ClickHouseDB\Statement;
-use Hyperf\DbConnection\Db;
+use Xtwoend\HyperfClickhouse\Clickhouse;
 use Tinderbox\ClickhouseBuilder\Query\Grammar;
-use Tinderbox\ClickhouseBuilder\Query\BaseBuilder;
+use Tinderbox\ClickhouseBuilder\Query\Builder as BaseBuilder;
 
 class Builder extends BaseBuilder
 {
+
+    /**
+     * @var \Tinderbox\Clickhouse\Client
+     */
+    protected $client;
 
     /** @var string */
     protected $tableSources;
 
     public function __construct()
     {
+        $this->client = Clickhouse::connection('clickhouse')->getClient();
         $this->grammar = new Grammar();
-    }
-
-    /**
-     * @return Statement
-     */
-    public function get()
-    {
-        /** @var Client $db */
-        $db = Clickhouse::connection('clickhouse')->getClient();
-        return $db->select($this->toSql());
-    }
-
-    /**
-     * @return array
-     */
-    public function getRows()
-    {
-        return $this->get()->rows();
     }
 
     /**
@@ -54,29 +42,4 @@ class Builder extends BaseBuilder
             $offset += $count;
         } while ($rows);
     }
-
-    /**
-     * For delete query
-     * @param string $table
-     * @return $this
-     */
-    public function setSourcesTable(string $table)
-    {
-        $this->tableSources = $table;
-        return $this;
-    }
-
-    /**
-     * Note! This is a heavy operation not designed for frequent use.
-     * @return Statement
-     */
-    public function delete()
-    {
-        $table = $this->tableSources ?? $this->getFrom()->getTable();
-        $sql = "ALTER TABLE $table DELETE " . $this->grammar->compileWheresComponent($this, $this->getWheres());
-        /** @var Client $db */
-        $db = Clickhouse::connection('clickhouse')->getClient();
-        return $db->write($sql);
-    }
-
 }

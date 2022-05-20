@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "896ccfa52009321ac26643cd7a6fe7ea",
+    "content-hash": "3732bb5c7c7a55e2ce5de6656013ecaa",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -592,65 +592,6 @@
                 "source": "https://github.com/ralouphie/getallheaders/tree/develop"
             },
             "time": "2019-03-08T08:55:37+00:00"
-        },
-        {
-            "name": "smi2/phpclickhouse",
-            "version": "1.4.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/smi2/phpClickHouse.git",
-                "reference": "e629bad8344d0a742b26955705a8ec1ccb5b40ae"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/smi2/phpClickHouse/zipball/e629bad8344d0a742b26955705a8ec1ccb5b40ae",
-                "reference": "e629bad8344d0a742b26955705a8ec1ccb5b40ae",
-                "shasum": ""
-            },
-            "require": {
-                "ext-curl": "*",
-                "ext-json": "*",
-                "php": "^7.3|^8.0"
-            },
-            "require-dev": {
-                "doctrine/coding-standard": "^8.2",
-                "phpstan/phpstan": "^0.12",
-                "phpunit/phpunit": "^9.5",
-                "sebastian/comparator": "^4.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "ClickHouseDB\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Igor Strykhar",
-                    "email": "isublimity@gmail.com",
-                    "homepage": "https://github.com/isublimity"
-                }
-            ],
-            "description": "PHP ClickHouse Client",
-            "homepage": "https://github.com/smi2/phpClickHouse",
-            "keywords": [
-                "clickhouse",
-                "client",
-                "curl",
-                "driver",
-                "http",
-                "http client",
-                "php"
-            ],
-            "support": {
-                "issues": "https://github.com/smi2/phpClickHouse/issues",
-                "source": "https://github.com/smi2/phpClickHouse/tree/1.4.4"
-            },
-            "time": "2022-04-23T18:46:17+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",

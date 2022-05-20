@@ -5,7 +5,6 @@ namespace Xtwoend\HyperfClickhouse;
 
 
 use Hyperf\Utils\Str;
-use ClickHouseDB\Client;
 use Hyperf\Database\Model\Concerns\HasAttributes;
 use Tinderbox\ClickhouseBuilder\Query\Enums\Operator;
 use Tinderbox\ClickhouseBuilder\Query\TwoElementsLogicExpression;
@@ -74,11 +73,21 @@ class Model
     }
 
     /**
-     * @return Client
+     * @return \Tinderbox\Clickhouse\Client
      */
     public static function getClient()
     {
         return Clickhouse::connection('clickhouse')->getClient();
+    }
+
+    /**
+     * Get a new query builder for the model's table.
+     *
+     * @return \Hyperf\Database\Model\Builder
+     */
+    public function newQuery()
+    {
+        return (new Builder)->from($this->getTable()); 
     }
 
     /**
@@ -222,15 +231,6 @@ class Model
     }
 
     /**
-     * @param array $select optional = ['*']
-     * @return Builder
-     */
-    public static function select($select = ['*'])
-    {
-        return (new Builder)->select($select)->from((new static)->getTable());
-    }
-
-    /**
      * Necessary stub for HasAttributes trait
      * @return array
      */
@@ -282,6 +282,32 @@ class Model
     }
 
     /**
+     * Handle dynamic method calls into the model.
+     *
+     * @param string $method
+     * @param array $parameters
+     */
+    public function __call($method, $parameters)
+    {
+        if (in_array($method, ['increment', 'decrement'])) {
+            return $this->{$method}(...$parameters);
+        }
+
+        return call([$this->newQuery(), $method], $parameters);
+    }
+
+    /**
+     * Handle dynamic static method calls into the method.
+     *
+     * @param string $method
+     * @param array $parameters
+     */
+    public static function __callStatic($method, $parameters)
+    {
+        return (new static())->{$method}(...$parameters);
+    }
+
+    /**
      * Optimize table. Using for ReplacingMergeTree, etc.
      * @source https://clickhouse.tech/docs/ru/sql-reference/statements/optimize/
      * @param bool $final
@@ -298,41 +324,6 @@ class Model
             $sql .= " FINAL";
         }
         return static::getClient()->write($sql);
-    }
-
-    /**
-     * @param TwoElementsLogicExpression|string|Closure $column
-     * @param string|null $operator
-     * @param int|float|string|null $value
-     * @param string $concatOperator Operator::AND for example
-     * @return Builder
-     */
-    public static function where($column, $operator = null, $value = null, string $concatOperator = Operator::AND)
-    {
-        $static = new static;
-        $builder = (new Builder)->select(['*'])
-            ->from($static->getTable())
-            ->setSourcesTable($static->getTableSources());
-        if (is_null($value)) {
-            // Fix func_num_args() in where clause in BaseBuilder
-            $builder->where($column, $operator);
-        } else {
-            $builder->where($column, $operator, $value, $concatOperator);
-        }
-        return $builder;
-    }
-
-    /**
-     * @param string $expression
-     * @return Builder
-     */
-    public static function whereRaw(string $expression)
-    {
-        $static = new static;
-        return (new Builder)->select(['*'])
-            ->from($static->getTable())
-            ->setSourcesTable($static->getTableSources())
-            ->whereRaw($expression);
     }
 
 }
