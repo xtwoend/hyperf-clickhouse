@@ -13,12 +13,16 @@ PHP 7.1
 Hyperf PHP
 Clickhouse server
 Installation
+
 1. Install via composer
 
+```
     $ composer require xtwoend/hyperf-clickhouse
+```
 
 2. Add new connection into your config/database.php:
 
+```
     'clickhouse' => [
         'driver' => 'clickhouse',
         'host' => env('CLICKHOUSE_HOST'),
@@ -34,6 +38,7 @@ Installation
             'max_partitions_per_insert_block' => 300,
         ],
     ],
+```
 
 Then patch your .env:
 
