@@ -1,0 +1,32 @@
+{
+    "name": "xtwoend/hyperf-clickhouse",
+    "description": "Clickhouse db for hyperf",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Xtwoend\\HyperfClickhouse\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Abdul Hafidz A",
+            "email": "aditans88@gmail.com"
+        }
+    ],
+    "require": {
+        "smi2/phpclickhouse": "^1.4",
+        "the-tinderbox/clickhouse-builder": "^5.3"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        },
+        "hyperf": {
+            "config": "Xtwoend\\HyperfClickhouse\\ConfigProvider"
+        }
+    }
+}
