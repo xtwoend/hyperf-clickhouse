@@ -1,11 +1,10 @@
 # phpClickHouse-hyperf
 Adapter to Hyperf framework of the most popular libraries:
 
-- https://github.com/smi2/phpClickHouse - for connections and perform queries
 - https://github.com/the-tinderbox/ClickhouseBuilder - good query builder
 
 ## Features
-No dependency, only Curl (support php >=7.1 )
+No dependency
 
 More: https://github.com/smi2/phpClickHouse#features
 
@@ -18,13 +17,13 @@ More: https://github.com/smi2/phpClickHouse#features
 
 1. Install via composer
 
-```
+```sh
 $ composer require xtwoend/hyperf-clickhouse
 ```
 
 2. Add new connection into your config/database.php:
 
-```
+```php
 'clickhouse' => [
     'driver' => 'clickhouse',
     'host' => env('CLICKHOUSE_HOST'),
@@ -44,7 +43,7 @@ $ composer require xtwoend/hyperf-clickhouse
 
 Then patch your .env:
 
-```
+```sh
 CLICKHOUSE_HOST=localhost
 CLICKHOUSE_PORT=8123
 CLICKHOUSE_DATABASE=default
@@ -60,9 +59,11 @@ CLICKHOUSE_HTTPS=true
 
 You can use smi2/phpClickHouse functionality directly:
 
-    /** @var \ClickHouseDB\Client $db */
-    $db = Clickhouse::connection('clickhouse')->getClient();
-    $statement = $db->select('SELECT * FROM summing_url_views LIMIT 2');
+```php
+/** @var \ClickHouseDB\Client $db */
+$db = Clickhouse::connection('clickhouse')->getClient();
+$statement = $db->select('SELECT * FROM summing_url_views LIMIT 2');
+```
 
 More about $db see here: https://github.com/smi2/phpClickHouse/blob/master/README.md
 
@@ -70,73 +71,73 @@ Or use dawnings of Eloquent ORM (will be implemented completely)
 
 1. Add model
 
-```
-    <?php
+```php
+<?php
 
 
-    namespace App\Models\Clickhouse;
+namespace App\Models\Clickhouse;
 
-    use Xtwoend\HyperfClickhouse\Model;
+use Xtwoend\HyperfClickhouse\Model;
 
-    class MyTable extends Model
-    {
-        // Not necessary. Can be obtained from class name MyTable => my_table
-        protected $table = 'my_table';
+class MyTable extends Model
+{
+    // Not necessary. Can be obtained from class name MyTable => my_table
+    protected $table = 'my_table';
 
-    }
+}
 ```
 
 2. Add migration
 
-```
-    <?php
+```php
+<?php
 
 
-    class CreateMyTable extends \Xtwoend\HyperfClickhouse\Migration
+class CreateMyTable extends \Xtwoend\HyperfClickhouse\Migration
+{
+    /**
+    * Run the migrations.
+    *
+    * @return void
+    */
+    public function up()
     {
-        /**
-        * Run the migrations.
-        *
-        * @return void
-        */
-        public function up()
-        {
-            static::write('
-                CREATE TABLE my_table (
-                    id UInt32,
-                    created_at DateTime,
-                    field_one String,
-                    field_two Int32
-                )
-                ENGINE = MergeTree()
-                ORDER BY (id)
-            ');
-        }
-
-        /**
-        * Reverse the migrations.
-        *
-        * @return void
-        */
-        public function down()
-        {
-            static::write('DROP TABLE my_table');
-        }
+        static::write('
+            CREATE TABLE my_table (
+                id UInt32,
+                created_at DateTime,
+                field_one String,
+                field_two Int32
+            )
+            ENGINE = MergeTree()
+            ORDER BY (id)
+        ');
     }
+
+    /**
+    * Reverse the migrations.
+    *
+    * @return void
+    */
+    public function down()
+    {
+        static::write('DROP TABLE my_table');
+    }
+}
 ```
 
 3. And then you can insert data
 
 One row
-```
-    $model = MyTable::create(['model_name' => 'model 1', 'some_param' => 1]);
-    # or
-    $model = MyTable::make(['model_name' => 'model 1']);
-    $model->some_param = 1;
-    $model->save();
-    # or
-    $model = new MyTable();
-    $model->fill(['model_name' => 'model 1', 'some_param' => 1])->save();
+```php
+$model = MyTable::create(['model_name' => 'model 1', 'some_param' => 1]);
+# or
+$model = MyTable::make(['model_name' => 'model 1']);
+$model->some_param = 1;
+$model->save();
+# or
+$model = new MyTable();
+$model->fill(['model_name' => 'model 1', 'some_param' => 1])->save();
 ```
 Or bulk insert
 
@@ -147,11 +148,12 @@ Or bulk insert
 
 
 4. Now check out the query builder
-
-    $rows = MyTable::select(['field_one', new RawColumn('sum(field_two)', 'field_two_sum')])
-        ->where('created_at', '>', '2020-09-14 12:47:29')
-        ->groupBy('field_one')
-        ->getRows();
+```php
+$rows = MyTable::select(['field_one', new RawColumn('sum(field_two)', 'field_two_sum')])
+    ->where('created_at', '>', '2020-09-14 12:47:29')
+    ->groupBy('field_one')
+    ->getRows();
+```
 
 ## Advanced usage
 Retries
@@ -167,46 +169,49 @@ retries is optional, default value is 0.
 
 ## Working with huge rows
 You can chunk results like in Laravel
-
-    // Split the result into chunks of 30 rows 
-    $rows = MyTable::select(['field_one', 'field_two'])
-        ->chunk(30, function ($rows) {
-            foreach ($rows as $row) {
-                echo $row['field_two'] . "\n";
-            }
-        });
+```php
+// Split the result into chunks of 30 rows 
+$rows = MyTable::select(['field_one', 'field_two'])
+    ->chunk(30, function ($rows) {
+        foreach ($rows as $row) {
+            echo $row['field_two'] . "\n";
+        }
+    });
+```
 
 Buffer engine for insert queries
 See https://clickhouse.tech/docs/en/engines/table-engines/special/buffer/
 
-    <?php
+```php
+<?php
 
-    namespace App\Models\Clickhouse;
+namespace App\Models\Clickhouse;
 
-    use Xtwoend\HyperfClickhouse\Model;
+use Xtwoend\HyperfClickhouse\Model;
 
-    class MyTable extends Model
-    {
-        // Not necessary. Can be obtained from class name MyTable => my_table
-        protected $table = 'my_table';
-        // All inserts will be in the table $tableForInserts 
-        // But all selects will be from $table
-        protected $tableForInserts = 'my_table_buffer';
-    }
+class MyTable extends Model
+{
+    // Not necessary. Can be obtained from class name MyTable => my_table
+    protected $table = 'my_table';
+    // All inserts will be in the table $tableForInserts 
+    // But all selects will be from $table
+    protected $tableForInserts = 'my_table_buffer';
+}
+```
     
 If you also want to read from your buffer table, put its name in $table
+```php
+<?php
 
-    <?php
+namespace App\Models\Clickhouse;
 
-    namespace App\Models\Clickhouse;
+use Xtwoend\HyperfClickhouse\Model;
 
-    use Xtwoend\HyperfClickhouse\Model;
-
-    class MyTable extends Model
-    {
-        protected $table = 'my_table_buffer';
-    }
-
+class MyTable extends Model
+{
+    protected $table = 'my_table_buffer';
+}
+```
 
 OPTIMIZE Statement
 See https://clickhouse.com/docs/ru/sql-reference/statements/optimize/
@@ -219,22 +224,24 @@ See https://clickhouse.com/docs/en/sql-reference/statements/alter/delete/
     MyTable::where('field_one', 123)->delete();
 
 Using buffer engine and performing OPTIMIZE or ALTER TABLE DELETE
+```php
+<?php
 
-    <?php
+namespace App\Models\Clickhouse;
 
-    namespace App\Models\Clickhouse;
+use Xtwoend\HyperfClickhouse\Model;
 
-    use Xtwoend\HyperfClickhouse\Model;
-
-    class MyTable extends Model
-    {
-        // All SELECT's and INSERT's on $table
-        protected $table = 'my_table_buffer';
-        // OPTIMIZE and DELETE on $tableSources
-        protected $tableSources = 'my_table';
-    }
+class MyTable extends Model
+{
+    // All SELECT's and INSERT's on $table
+    protected $table = 'my_table_buffer';
+    // OPTIMIZE and DELETE on $tableSources
+    protected $tableSources = 'my_table';
+}
+```
 
 Helpers for inserting different data types
-
-    // Array data type
-    MyTable::insertAssoc([[1,'str',new InsertArray(['a','b'])]]);
+```php
+// Array data type
+MyTable::insertAssoc([[1,'str',new InsertArray(['a','b'])]]);
+```
