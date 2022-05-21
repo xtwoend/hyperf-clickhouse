@@ -15,6 +15,20 @@ class Model
     use HasAttributes;
 
     /**
+     * The name of the "created at" column.
+     *
+     * @var null|string
+     */
+    public const CREATED_AT = 'created_at';
+
+    /**
+     * The name of the "updated at" column.
+     *
+     * @var null|string
+     */
+    public const UPDATED_AT = 'updated_at';
+
+    /**
      * The table associated with the model.
      *
      * @var string
@@ -81,13 +95,23 @@ class Model
     }
 
     /**
+     * Begin querying the model.
+     *
+     * @return \Xtwoend\HyperfClickhouse\Builder
+     */
+    public static function query()
+    {
+        return (new static())->newQuery();
+    }
+
+    /**
      * Get a new query builder for the model's table.
      *
-     * @return \Hyperf\Database\Model\Builder
+     * @return \Xtwoend\HyperfClickhouse\Builder
      */
     public function newQuery()
-    {
-        return (new Builder)->from($this->getTable()); 
+    {   
+        return (new Builder)->from($this->getTableForInserts()); 
     }
 
     /**
@@ -139,72 +163,8 @@ class Model
         if ($this->exists) {
             throw new \Exception("Clickhouse does not allow update rows");
         }
-        $this->exists = !static::insertAssoc([$this->getAttributes()])->isError();
+        $this->exists = static::insert([$this->getAttributes()]);
         return $this->exists;
-    }
-
-    /**
-     * Bulk insert into Clickhouse database
-     * @param array[] $rows
-     * @return \ClickHouseDB\Statement
-     * @deprecated use insertBulk
-     */
-    public static function insert($rows)
-    {
-        return static::getClient()->insert((new static)->getTableForInserts(), $rows);
-    }
-
-    /**
-     * Bulk insert into Clickhouse database
-     * @param array[] $rows
-     * @param array $columns
-     * @return \ClickHouseDB\Statement
-     * @example MyModel::insertBulk([['model 1', 1], ['model 2', 2]], ['model_name', 'some_param']);
-     */
-    public static function insertBulk($rows, $columns = [])
-    {
-        return static::getClient()->insert((new static)->getTableForInserts(), $rows, $columns);
-    }
-
-    /**
-     * Prepare each row by calling static::prepareFromRequest to bulk insert into database
-     * @param array[] $rows
-     * @param array $columns
-     * @return \ClickHouseDB\Statement
-     */
-    public static function prepareAndInsert($rows, $columns = [])
-    {
-        $rows = array_map('static::prepareFromRequest', $rows, $columns);
-        return static::getClient()->insert((new static)->getTableForInserts(), $rows, $columns);
-    }
-
-    /**
-     * Bulk insert rows as associative array into Clickhouse database
-     * @param array[] $rows
-     * @return \ClickHouseDB\Statement
-     * @example MyModel::insertAssoc([['model_name' => 'model 1', 'some_param' => 1], ['model_name' => 'model 2', 'some_param' => 2]]);
-     */
-    public static function insertAssoc($rows)
-    {
-        $rows = array_values($rows);
-        if (isset($rows[0]) && isset($rows[1])) {
-            $keys = array_keys($rows[0]);
-            foreach ($rows as &$row) {
-                $row = array_replace(array_flip($keys), $row);
-            }
-        }
-        return static::getClient()->insertAssocBulk((new static)->getTableForInserts(), $rows);
-    }
-
-    /**
-     * Prepare each row by calling static::prepareAssocFromRequest to bulk insert into database
-     * @param array[] $rows
-     * @return \ClickHouseDB\Statement
-     */
-    public static function prepareAndInsertAssoc($rows)
-    {
-        $rows = array_map('static::prepareAssocFromRequest', $rows);
-        return static::insertAssoc($rows);
     }
 
     /**

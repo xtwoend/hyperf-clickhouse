@@ -215,14 +215,14 @@ class MyTable extends Model
 
 OPTIMIZE Statement
 See https://clickhouse.com/docs/ru/sql-reference/statements/optimize/
-
-    MyTable::optimize($final = false, $partition = null);
-
+```php
+MyTable::optimize($final = false, $partition = null);
+```
 ## Deletions
 See https://clickhouse.com/docs/en/sql-reference/statements/alter/delete/
-
-    MyTable::where('field_one', 123)->delete();
-
+```php
+MyTable::where('field_one', 123)->delete();
+```
 Using buffer engine and performing OPTIMIZE or ALTER TABLE DELETE
 ```php
 <?php
@@ -240,8 +240,3 @@ class MyTable extends Model
 }
 ```
 
-Helpers for inserting different data types
-```php
-// Array data type
-MyTable::insertAssoc([[1,'str',new InsertArray(['a','b'])]]);
-```

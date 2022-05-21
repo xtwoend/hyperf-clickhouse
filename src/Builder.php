@@ -6,7 +6,9 @@ namespace Xtwoend\HyperfClickhouse;
 
 use ClickHouseDB\Client;
 use ClickHouseDB\Statement;
+use ClickHouseDB\Quote\FormatLine;
 use Xtwoend\HyperfClickhouse\Clickhouse;
+use ClickHouseDB\Exception\QueryException;
 use Tinderbox\ClickhouseBuilder\Query\Grammar;
 use Tinderbox\ClickhouseBuilder\Query\Builder as BaseBuilder;
 
@@ -26,7 +28,7 @@ class Builder extends BaseBuilder
         $this->client = Clickhouse::connection('clickhouse')->getClient();
         $this->grammar = new Grammar();
     }
-
+    
     /**
      * Chunk the results of the query.
      *
