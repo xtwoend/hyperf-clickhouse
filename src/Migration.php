@@ -15,6 +15,6 @@ class Migration extends BaseMigration
     {
         /** @var \ClickHouseDB\Client $client */
         $client = Clickhouse::connection('clickhouse')->getClient();
-        return $client->write($sql);
+        return $client->writeOne($sql);
     }
 }
